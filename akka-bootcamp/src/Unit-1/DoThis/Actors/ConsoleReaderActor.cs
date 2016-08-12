@@ -12,17 +12,17 @@ namespace WinTail.Actors
     {
         public const string ExitCommand = "exit";
         public const string StartCommand = "start";
-        private readonly IActorRef _consoleWriterActor;
+        //private readonly IActorRef _consoleWriterActor;
+        private readonly IActorRef validationActor;
 
-        public ConsoleReaderActor(IActorRef consoleWriterActor)
+        public ConsoleReaderActor(IActorRef validationActor)
         {
-            _consoleWriterActor = consoleWriterActor;
+            this.validationActor = validationActor;
         }
 
         protected override void OnReceive(object message)
         {
             if (message.Equals(StartCommand)) { DoPrintInstructions(); }
-            else if (message is InputErrorMessage) { _consoleWriterActor.Tell(message as InputErrorMessage); }
 
             GetAndValidateInput();
         }
@@ -34,8 +34,20 @@ namespace WinTail.Actors
             Console.WriteLine("Write whatever you want into the console!");
             Console.WriteLine("Some entries will pass validation, and some won't...\n\n");
             Console.WriteLine("Type 'exit' to quit this application at any time.\n");
-        }     
+        }
 
+        private void GetAndValidateInput()
+        {
+            var message = Console.ReadLine();
+            if (!string.IsNullOrEmpty(message) &&
+                string.Equals(message, ExitCommand, StringComparison.OrdinalIgnoreCase))
+            {
+                Context.System.Shutdown();
+                return;
+            }
+
+            validationActor.Tell(message);
+        }
         #endregion
 
     }
