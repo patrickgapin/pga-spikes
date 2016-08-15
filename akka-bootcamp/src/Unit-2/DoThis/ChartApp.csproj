@@ -56,12 +56,17 @@
   <ItemGroup>
     <Compile Include="Actors\ChartingActor.cs" />
     <Compile Include="ChartDataHelper.cs" />
+    <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
+    <Compile Include="Messages\AddSeriesMessage.cs" />
+    <Compile Include="Messages\GatherMetricsMessage.cs" />
+    <Compile Include="Messages\InitializeChartMessage.cs" />
+    <Compile Include="Messages\MetricMessage.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Main.resx">
@@ -90,6 +95,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

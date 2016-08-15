@@ -5,6 +5,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 using Akka.Actor;
 using Akka.Util.Internal;
 using ChartApp.Actors;
+using ChartApp.Messages;
 
 namespace ChartApp
 {
@@ -20,12 +21,11 @@ namespace ChartApp
 
         #region Initialization
 
-
         private void Main_Load(object sender, EventArgs e)
         {
             _chartActor = Program.ChartActors.ActorOf(Props.Create(() => new ChartingActor(sysChart)), "charting");
             var series = ChartDataHelper.RandomSeries("FakeSeries" + _seriesCounter.GetAndIncrement());
-            _chartActor.Tell(new ChartingActor.InitializeChart(new Dictionary<string, Series>()
+            _chartActor.Tell(new InitializeChartMessage(new Dictionary<string, Series>()
             {
                 {series.Name, series}
             }));
@@ -41,5 +41,20 @@ namespace ChartApp
         }
 
         #endregion
+
+        private void buttonDisk_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonMemory_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonCpu_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
