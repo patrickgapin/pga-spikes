@@ -30,8 +30,7 @@ namespace WinTail.Actors
             if (message is StartTail)
             {
                 var msg = message as StartTail;
-                var tailActorProps = Props.Create(() => new TailActor(msg.ReporterActor, msg.FilePath));
-                Context.ActorOf(tailActorProps, "tailActor");
+                Context.ActorOf(Props.Create(() => new TailActor(msg.ReporterActor, msg.FilePath)));
             }
         }
 

@@ -10,9 +10,9 @@ namespace WinTail.Actors
     {
         private readonly string filePath;
         private readonly IActorRef reporterActor;
-        private readonly FileObserver observer;
-        private readonly Stream fileStream;
-        private readonly StreamReader fileStreamReader;
+        private FileObserver observer;
+        private Stream fileStream;
+        private StreamReader fileStreamReader;
 
         #region Message Types
 
@@ -45,8 +45,11 @@ namespace WinTail.Actors
         {
             this.reporterActor = reporterActor;
             this.filePath = filePath;
+        }
 
-            observer = new FileObserver(Self, filePath);
+        protected override void PreStart()
+        {
+            observer = new FileObserver(Self, Path.GetFullPath(filePath));
             observer.Start();
 
             fileStream = new FileStream(Path.GetFullPath(filePath), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -55,6 +58,15 @@ namespace WinTail.Actors
 
             var text = fileStreamReader.ReadToEnd();
             Self.Tell(new InitialRead(filePath, text));
+        }
+
+        protected override void PostStop()
+        {
+            observer.Dispose();
+            observer = null;
+            fileStream.Close();
+            fileStreamReader.Dispose();
+            base.PostStop();
         }
 
         protected override void OnReceive(object message)
@@ -66,7 +78,7 @@ namespace WinTail.Actors
 
             }
             else if (message is FileError) { reporterActor.Tell($"Tail error: {(message as FileError).Reason}"); }
-            else if (message is InitialRead){ reporterActor.Tell((message as InitialRead).Text);}
+            else if (message is InitialRead) { reporterActor.Tell((message as InitialRead).Text); }
         }
     }
 }

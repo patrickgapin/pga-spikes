@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Akka.Actor;
 using WinTail.Actors;
 
@@ -27,13 +23,15 @@ namespace WinTail.Helpers
 
         public void Start()
         {
-            watcher = new FileSystemWatcher(fileDir, fileNameOnly)
-            {
-                NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
-            };
+            watcher = new FileSystemWatcher(fileDir, fileNameOnly);
+
+            watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;           
 
             watcher.Changed += OnFileChanged;
+
             watcher.Error += OnFileError;
+
+            watcher.EnableRaisingEvents = true;
         }
 
         private void OnFileError(object sender, ErrorEventArgs e)

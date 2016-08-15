@@ -93,7 +93,7 @@ namespace WinTail
                 if (!string.IsNullOrEmpty(text))
                 {
                     _reporterActor.Tell(text);
-                }
+                 }
 
             }
             else if (message is FileError)

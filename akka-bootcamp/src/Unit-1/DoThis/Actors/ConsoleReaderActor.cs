@@ -1,5 +1,6 @@
 using System;
 using Akka.Actor;
+using WinTail.Helpers;
 using WinTail.Messages;
 
 namespace WinTail.Actors
@@ -12,13 +13,6 @@ namespace WinTail.Actors
     {
         public const string ExitCommand = "exit";
         public const string StartCommand = "start";
-        //private readonly IActorRef _consoleWriterActor;
-        private readonly IActorRef validationActor;
-
-        public ConsoleReaderActor(IActorRef validationActor)
-        {
-            this.validationActor = validationActor;
-        }
 
         protected override void OnReceive(object message)
         {
@@ -31,9 +25,7 @@ namespace WinTail.Actors
 
         private void DoPrintInstructions()
         {
-            Console.WriteLine("Write whatever you want into the console!");
-            Console.WriteLine("Some entries will pass validation, and some won't...\n\n");
-            Console.WriteLine("Type 'exit' to quit this application at any time.\n");
+            Console.WriteLine("Please provide the URI of a log file on disk.\n");
         }
 
         private void GetAndValidateInput()
@@ -46,7 +38,8 @@ namespace WinTail.Actors
                 return;
             }
 
-            validationActor.Tell(message);
+            //validationActor.Tell(message);
+            Context.ActorSelection(Constants.FilePaths.ValidationActorPath).Tell(message);
         }
         #endregion
 

@@ -58,6 +58,7 @@
     <Compile Include="Actors\ConsoleReaderActor.cs" />
     <Compile Include="Actors\ConsoleWriterActor.cs" />
     <Compile Include="Actors\FileValidationActor.cs" />
+    <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\FileObserver.cs" />
     <Compile Include="Messages\ValidationErrorMessage.cs" />
     <Compile Include="Messages\NullInputErrorMessage.cs" />
