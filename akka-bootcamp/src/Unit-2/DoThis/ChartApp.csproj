@@ -54,7 +54,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actors\ButtonToggleActor.cs" />
     <Compile Include="Actors\ChartingActor.cs" />
+    <Compile Include="Actors\PerformanceCounter.cs" />
+    <Compile Include="Actors\PerformanceCounterCoordinatorActor.cs" />
     <Compile Include="ChartDataHelper.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Main.cs">
@@ -63,10 +66,7 @@
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
-    <Compile Include="Messages\AddSeriesMessage.cs" />
-    <Compile Include="Messages\GatherMetricsMessage.cs" />
-    <Compile Include="Messages\InitializeChartMessage.cs" />
-    <Compile Include="Messages\MetricMessage.cs" />
+    <Compile Include="Messages\CounterType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Main.resx">
