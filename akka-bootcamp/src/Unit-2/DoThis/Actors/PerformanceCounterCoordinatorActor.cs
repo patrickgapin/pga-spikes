@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Windows.Forms.DataVisualization.Charting;
 using Akka.Actor;
 using ChartApp.Messages;
-
 namespace ChartApp.Actors
 {
     public class PerformanceCounterCoordinatorActor : ReceiveActor
@@ -30,30 +29,22 @@ namespace ChartApp.Actors
         /// Methods for creating new <see cref="Series"/> with distinct colors and names
         /// corresponding to each <see cref="PerformanceCounter"/>
         /// </summary>
-        private static readonly Dictionary<CounterType, Func<Series>> CounterSeries =
-            new Dictionary<CounterType, Func<Series>>()
+        private static readonly Dictionary<CounterType, Func<Series>> CounterSeries = new Dictionary<CounterType, Func<Series>>()
             {
-                {
-                    CounterType.Cpu,
-                    () => new Series(CounterType.Cpu.ToString()) {ChartType = SeriesChartType.SplineArea,Color = Color.DarkGreen }
-                },
-                {
-                    CounterType.Memory,
-                    () => new Series(CounterType.Memory.ToString()){ChartType = SeriesChartType.FastLine,Color = Color.MediumBlue }
-                },
-                {
-                    CounterType.Memory,
-                    () => new Series(CounterType.Disk.ToString()){ChartType = SeriesChartType.Spline,Color = Color.DarkRed}
-                }
+                {CounterType.Cpu, () => new Series(CounterType.Cpu.ToString()) {ChartType = SeriesChartType.SplineArea,Color = Color.DarkGreen }},
+                {CounterType.Memory, () => new Series(CounterType.Memory.ToString()){ChartType = SeriesChartType.FastLine,Color = Color.MediumBlue }},
+                {CounterType.Memory, () => new Series(CounterType.Disk.ToString()){ChartType = SeriesChartType.Spline,Color = Color.DarkRed}}
             };
 
+        public PerformanceCounterCoordinatorActor(IActorRef chartingActor) : this(chartingActor, new Dictionary<CounterType, IActorRef>())
+        { }
 
         public PerformanceCounterCoordinatorActor(IActorRef chartingActor, Dictionary<CounterType, IActorRef> counterActors)
         {
             this.chartingActor = chartingActor;
             this.counterActors = counterActors;
 
-            Receive<Messages.WatchMessage>(watchMessage =>
+            Receive<WatchMessage>(watchMessage =>
             {
                 if (!counterActors.ContainsKey(watchMessage.CounterType))
                 {
@@ -65,50 +56,43 @@ namespace ChartApp.Actors
                 }
 
                 // register this series with the ChartingActor
-                chartingActor.Tell(new ChartingActor.Messages.AddSeriesMessage(CounterSeries[watchMessage.CounterType]()));
+                chartingActor.Tell(new ChartingActor.AddSeriesMessage(CounterSeries[watchMessage.CounterType]()));
 
                 // tell the counter actor to begin publishing its statistics to the _chartingActor
-                counterActors[watchMessage.CounterType].Tell(new PerformanceCounterActor.Messages.SubscribeCounterMessage(watchMessage.CounterType, chartingActor));
+                counterActors[watchMessage.CounterType].Tell(new PerformanceCounterActor.SubscribeCounterMessage(watchMessage.CounterType, chartingActor));
             });
 
-            Receive<Messages.UnwatchMessage>(unwatchMessage =>
+            Receive<UnwatchMessage>(unwatchMessage =>
             {
                 if (!counterActors.ContainsKey(unwatchMessage.CounterType)) { return; }
 
-                counterActors[unwatchMessage.CounterType].Tell(new PerformanceCounterActor.Messages.UnSubscribeCounterMessage(unwatchMessage.CounterType, chartingActor));
+                counterActors[unwatchMessage.CounterType].Tell(new PerformanceCounterActor.UnSubscribeCounterMessage(unwatchMessage.CounterType, chartingActor));
 
-                chartingActor.Tell(new ChartingActor.Messages.RemoveSeriesMessage(unwatchMessage.CounterType.ToString()));
+                chartingActor.Tell(new ChartingActor.RemoveSeriesMessage(unwatchMessage.CounterType.ToString()));
             });
 
         }
 
-        public PerformanceCounterCoordinatorActor(IActorRef chartingActor) :
-            this(chartingActor, new Dictionary<CounterType, IActorRef>())
-        { }
+
 
         #region Messages
 
-        public class Messages
+        public class UnwatchMessage
         {
-            public class UnwatchMessage
-            {
-                public CounterType CounterType { get; private set; }
+            public CounterType CounterType { get; private set; }
 
-                public UnwatchMessage(CounterType counterType) { this.CounterType = counterType; }
-            }
-
-            public class WatchMessage
-            {
-                public CounterType CounterType { get; private set; }
-
-                public WatchMessage(CounterType counterType)
-                {
-                    this.CounterType = counterType;
-                }
-            }
+            public UnwatchMessage(CounterType counterType) { this.CounterType = counterType; }
         }
 
+        public class WatchMessage
+        {
+            public CounterType CounterType { get; private set; }
 
+            public WatchMessage(CounterType counterType)
+            {
+                this.CounterType = counterType;
+            }
+        }
         #endregion
     }
 }

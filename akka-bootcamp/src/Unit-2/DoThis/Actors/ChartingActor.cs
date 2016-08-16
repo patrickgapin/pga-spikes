@@ -29,17 +29,17 @@ namespace ChartApp.Actors
         public ChartingActor(Chart chart, Dictionary<string, Series> seriesIndex)
         {
             this.chart = chart;
-            this.seriesIndex = seriesIndex;            
+            this.seriesIndex = seriesIndex;
 
-            Receive<Messages.InitializeChartMessage>(message => HandleInitialize(message));
-            Receive<Messages.AddSeriesMessage>(message => HandleAddSeriesMessage(message));
-            Receive<Messages.RemoveSeriesMessage>(message => HandleRemoveSeriesMessage(message));
-            Receive<Messages.MetricMessage>(message => HandleMetricsMessage(message));
+            Receive<InitializeChartMessage>(message => HandleInitialize(message));
+            Receive<AddSeriesMessage>(message => HandleAddSeriesMessage(message));
+            Receive<RemoveSeriesMessage>(message => HandleRemoveSeriesMessage(message));
+            Receive<MetricMessage>(message => HandleMetricsMessage(message));
         }
 
         #region Individual Message Type Handlers
 
-        private void HandleInitialize(Messages.InitializeChartMessage ic)
+        private void HandleInitialize(InitializeChartMessage ic)
         {
             if (ic.InitialSeries != null)
             {
@@ -71,7 +71,7 @@ namespace ChartApp.Actors
             SetChartBoundaries();
         }
 
-        private void HandleAddSeriesMessage(Messages.AddSeriesMessage series)
+        private void HandleAddSeriesMessage(AddSeriesMessage series)
         {
             if (!string.IsNullOrEmpty(series.Series.Name) && !seriesIndex.ContainsKey(series.Series.Name))
             {
@@ -81,7 +81,7 @@ namespace ChartApp.Actors
             }
         }
 
-        private void HandleRemoveSeriesMessage(Messages.RemoveSeriesMessage message)
+        private void HandleRemoveSeriesMessage(RemoveSeriesMessage message)
         {
             if (!string.IsNullOrEmpty(message.SeriesName) && seriesIndex.ContainsKey(message.SeriesName))
             {
@@ -92,14 +92,14 @@ namespace ChartApp.Actors
             }
         }
 
-        private void HandleMetricsMessage(Messages.MetricMessage message)
+        private void HandleMetricsMessage(MetricMessage message)
         {
             if (!string.IsNullOrEmpty(message.Series) && seriesIndex.ContainsKey(message.Series))
             {
                 var series = seriesIndex[message.Series];
                 series.Points.AddXY(xPosCounter++, message.CounterValue);
 
-                while(series.Points.Count > MaxPoints) series.Points.RemoveAt(0);
+                while (series.Points.Count > MaxPoints) series.Points.RemoveAt(0);
 
                 SetChartBoundaries();
             }
@@ -112,10 +112,10 @@ namespace ChartApp.Actors
             //double minAxisY = 0.seriesIndex;
             var allPoints = seriesIndex.Values.SelectMany(series => series.Points).ToList();
             var yValues = allPoints.SelectMany(point => point.YValues).ToList();
-            var maxAxisX = xPosCounter;
-            var minAxisX = xPosCounter - MaxPoints;
-            var maxAxisY = yValues.Count > 0 ? Math.Ceiling(yValues.Max()) : 1.0d;
-            var minAxisY = yValues.Count > 0 ? Math.Floor(yValues.Max()) : 0.0d;
+            double maxAxisX = xPosCounter;
+            double minAxisX = xPosCounter - MaxPoints;
+            double maxAxisY = yValues.Count > 0 ? Math.Ceiling(yValues.Max()) : 1.0d;
+            double minAxisY = yValues.Count > 0 ? Math.Floor(yValues.Max()) : 0.0d;
 
             if (allPoints.Count > 2)
             {
@@ -126,50 +126,50 @@ namespace ChartApp.Actors
                 area.AxisX.Maximum = maxAxisY;
             }
         }
+        #region Messages
 
-        public class Messages
+        public class InitializeChartMessage
         {
-            public class InitializeChartMessage
+            public InitializeChartMessage(Dictionary<string, Series> initialSeries)
             {
-                public InitializeChartMessage(Dictionary<string, Series> initialSeries)
-                {
-                    InitialSeries = initialSeries;
-                }
-
-                public Dictionary<string, Series> InitialSeries { get; private set; }
+                InitialSeries = initialSeries;
             }
 
-            public class AddSeriesMessage
+            public Dictionary<string, Series> InitialSeries { get; private set; }
+        }
+
+        public class AddSeriesMessage
+        {
+            public Series Series { get; private set; }
+
+            public AddSeriesMessage(Series series)
             {
-                public Series Series { get; private set; }
-
-                public AddSeriesMessage(Series series)
-                {
-                    this.Series = series;
-                }
-            }
-
-            public class RemoveSeriesMessage
-            {
-                public RemoveSeriesMessage(string seriesName)
-                {
-                    SeriesName = seriesName;
-                }
-
-                public string SeriesName { get; private set; }
-            }
-
-            public class MetricMessage
-            {
-                public string Series { get; private set; }
-                public float CounterValue { get; private set; }
-
-                public MetricMessage(string series, float counterValue)
-                {
-                    this.Series = series;
-                    this.CounterValue = counterValue;
-                }
+                this.Series = series;
             }
         }
+
+        public class RemoveSeriesMessage
+        {
+            public RemoveSeriesMessage(string seriesName)
+            {
+                SeriesName = seriesName;
+            }
+
+            public string SeriesName { get; private set; }
+        }
+
+        public class MetricMessage
+        {
+            public string Series { get; private set; }
+            public float CounterValue { get; private set; }
+
+            public MetricMessage(string series, float counterValue)
+            {
+                this.Series = series;
+                this.CounterValue = counterValue;
+            }
+        }
+
+        #endregion
     }
 }

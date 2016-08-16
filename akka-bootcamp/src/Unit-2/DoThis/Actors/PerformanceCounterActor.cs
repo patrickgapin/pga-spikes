@@ -29,7 +29,7 @@ namespace ChartApp.Actors
             performanceCounter = performanceCounterGenerator();
             Context.System.Scheduler.ScheduleTellRepeatedly(
                 TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(250),
-                Self, new Messages.GatherMetricsMessage(), Self, cancelPublishing
+                Self, new GatherMetricsMessage(), Self, cancelPublishing
                 );
         }
 
@@ -40,7 +40,7 @@ namespace ChartApp.Actors
                 cancelPublishing.Cancel(false);
                 performanceCounter.Dispose();
             }
-            catch (Exception) {/*dont care about additional ObjectDisposed Exceptions*/}
+            catch {/*dont care about additional ObjectDisposed Exceptions*/}
             finally { base.PostStop(); }
         }
 
@@ -48,47 +48,45 @@ namespace ChartApp.Actors
 
         protected override void OnReceive(object message)
         {
-            if (message is Messages.GatherMetricsMessage)
+            if (message is GatherMetricsMessage)
             {
-                var metric = new ChartingActor.Messages.MetricMessage(seriesName, performanceCounter.NextValue());
+                var metric = new ChartingActor.MetricMessage(seriesName, performanceCounter.NextValue());
                 foreach (var subscription in subscriptions) { subscription.Tell(metric); }
             }
-            else if (message is Messages.SubscribeCounterMessage) { subscriptions.Add((message as Messages.SubscribeCounterMessage).Subscriber); }
-            else if (message is Messages.UnSubscribeCounterMessage) { subscriptions.Remove((message as Messages.UnSubscribeCounterMessage).Subscriber); }
+            else if (message is SubscribeCounterMessage) { subscriptions.Add((message as SubscribeCounterMessage).Subscriber); }
+            else if (message is UnSubscribeCounterMessage) { subscriptions.Remove((message as UnSubscribeCounterMessage).Subscriber); }
         }
 
         #region Messages
 
-        public class Messages
+        public class GatherMetricsMessage
         {
-            public class GatherMetricsMessage
+        }
+
+        public class SubscribeCounterMessage
+        {
+            public CounterType CounterType { get; private set; }
+            public IActorRef Subscriber { get; private set; }
+
+            public SubscribeCounterMessage(CounterType counterType, IActorRef subscriber)
             {
-            }
-
-            public class SubscribeCounterMessage
-            {
-                public CounterType CounterType { get; private set; }
-                public IActorRef Subscriber { get; private set; }
-
-                public SubscribeCounterMessage(CounterType counterType, IActorRef subscriber)
-                {
-                    this.CounterType = counterType;
-                    this.Subscriber = subscriber;
-                }
-            }
-
-            public class UnSubscribeCounterMessage
-            {
-                public CounterType CounterType { get; private set; }
-                public IActorRef Subscriber { get; private set; }
-
-                public UnSubscribeCounterMessage(CounterType counterType, IActorRef subscriber)
-                {
-                    this.CounterType = counterType;
-                    this.Subscriber = subscriber;
-                }
+                this.CounterType = counterType;
+                this.Subscriber = subscriber;
             }
         }
+
+        public class UnSubscribeCounterMessage
+        {
+            public CounterType CounterType { get; private set; }
+            public IActorRef Subscriber { get; private set; }
+
+            public UnSubscribeCounterMessage(CounterType counterType, IActorRef subscriber)
+            {
+                this.CounterType = counterType;
+                this.Subscriber = subscriber;
+            }
+        }
+
 
         #endregion
     }

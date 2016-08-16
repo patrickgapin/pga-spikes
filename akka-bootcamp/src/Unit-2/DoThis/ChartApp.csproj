@@ -56,7 +56,7 @@
   <ItemGroup>
     <Compile Include="Actors\ButtonToggleActor.cs" />
     <Compile Include="Actors\ChartingActor.cs" />
-    <Compile Include="Actors\PerformanceCounter.cs" />
+    <Compile Include="Actors\PerformanceCounterActor.cs" />
     <Compile Include="Actors\PerformanceCounterCoordinatorActor.cs" />
     <Compile Include="ChartDataHelper.cs" />
     <Compile Include="Helpers\Constants.cs" />

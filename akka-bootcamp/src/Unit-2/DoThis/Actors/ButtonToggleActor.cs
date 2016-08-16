@@ -24,10 +24,10 @@ namespace ChartApp.Actors
 
         protected override void OnReceive(object message)
         {
-            if (message is Messages.ToggleMessage)
+            if (message is ToggleMessage)
             {
-                if (isToggleOn) { coordinatorActor.Tell(new PerformanceCounterCoordinatorActor.Messages.UnwatchMessage(myCounterType)); }
-                else { coordinatorActor.Tell(new PerformanceCounterCoordinatorActor.Messages.WatchMessage(myCounterType)); }
+                if (isToggleOn) { coordinatorActor.Tell(new PerformanceCounterCoordinatorActor.UnwatchMessage(myCounterType)); }
+                else { coordinatorActor.Tell(new PerformanceCounterCoordinatorActor.WatchMessage(myCounterType)); }
 
                 FlipToggle();
                 return;
@@ -45,12 +45,11 @@ namespace ChartApp.Actors
 
         #region Messages
 
-        public class Messages
+
+        public class ToggleMessage
         {
-            public class ToggleMessage
-            {
-            }
         }
+
 
 
         #endregion
