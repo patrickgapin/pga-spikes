@@ -1,57 +1,70 @@
-﻿
-using System;
-using System.IO.IsolatedStorage;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 using Akka.Actor;
-using ChartApp.Messages;
 
 namespace ChartApp.Actors
 {
+    /// <summary>
+    /// Actor responsible for managing button toggles
+    /// </summary>
     public class ButtonToggleActor : UntypedActor
     {
-        private readonly CounterType myCounterType;
-        private bool isToggleOn;
-        private readonly Button myButton;
-        private readonly IActorRef coordinatorActor;
+        #region Message types
 
-        public ButtonToggleActor(IActorRef coordinatorActor, Button myButton, CounterType myCounterType, bool isToggleOn = false)
+        /// <summary>
+        /// Toggles this button on or off and sends an appropriate messages
+        /// to the <see cref="PerformanceCounterCoordinatorActor"/>
+        /// </summary>
+        public class Toggle { }
+
+        #endregion
+
+        private readonly CounterType _myCounterType;
+        private bool _isToggledOn;
+        private readonly Button _myButton;
+        private readonly IActorRef _coordinatorActor;
+
+        public ButtonToggleActor(IActorRef coordinatorActor, Button myButton, CounterType myCounterType,  bool isToggledOn = false)
         {
-            this.coordinatorActor = coordinatorActor;
-            this.myButton = myButton;
-            this.myCounterType = myCounterType;
-            this.isToggleOn = isToggleOn;
+            _coordinatorActor = coordinatorActor;
+            _myButton = myButton;
+            _isToggledOn = isToggledOn;
+            _myCounterType = myCounterType;
         }
 
         protected override void OnReceive(object message)
         {
-            if (message is ToggleMessage)
+            if (message is Toggle && _isToggledOn)
             {
-                if (isToggleOn) { coordinatorActor.Tell(new PerformanceCounterCoordinatorActor.UnwatchMessage(myCounterType)); }
-                else { coordinatorActor.Tell(new PerformanceCounterCoordinatorActor.WatchMessage(myCounterType)); }
+                //toggle is currently on
+
+                //stop watching this counter
+                _coordinatorActor.Tell(new PerformanceCounterCoordinatorActor.Unwatch(_myCounterType));
 
                 FlipToggle();
-                return;
             }
+            else if (message is Toggle && !_isToggledOn)
+            {
+                //toggle is currently off
 
-            Unhandled(message);
+                //start watching this counter
+                _coordinatorActor.Tell(new PerformanceCounterCoordinatorActor.Watch(_myCounterType));
+
+                FlipToggle();
+            }
+            else
+            {
+                Unhandled(message);
+            }
         }
 
         private void FlipToggle()
         {
-            isToggleOn = !isToggleOn;
-
-            myButton.Text = $"{myCounterType.ToString().ToUpperInvariant()} {(isToggleOn ? "(ON)" : "(OFF)")}";
+            //flip the toggle
+            _isToggledOn = !_isToggledOn;
+            
+            //change the text of the button
+            _myButton.Text = string.Format("{0} ({1})", _myCounterType.ToString().ToUpperInvariant(),
+                _isToggledOn ? "ON" : "OFF");
         }
-
-        #region Messages
-
-
-        public class ToggleMessage
-        {
-        }
-
-
-
-        #endregion
     }
 }
